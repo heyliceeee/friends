@@ -1,18 +1,32 @@
 class FriendsController < ApplicationController
   before_action :set_friend, only: %i[ show edit update destroy ]
 
+  #if user dont auth, can do nothing, except see friends and detail friend
+  before_action :authenticate_user!, except: [ :index, :show]
+
+  #if make sure is friends of user, can UD
+  before_action :correct_user, only: [ :edit, :update, :destroy ]
+
   # GET /friends or /friends.json
   def index
-    @friends = Friend.all
+    @friends = Friend.all #all friends
+  end
+
+
+  # GET friends of user
+  def correct_user
+    @friend = current_user.friends.find_by(id: params[:id]) #friend = friends of current user
+    redirect_to friends_path, notice: "Not authorized to do this on this friend" if @friend.nil? #if not is current user, show notice
   end
 
   # GET /friends/1 or /friends/1.json
   def show
   end
 
-  # GET /friends/new
+  # GET /friends/new - form add new friend
   def new
-    @friend = Friend.new
+    #@friend = Friend.new
+    @friend = current_user.friends.build
   end
 
   # GET /friends/1/edit
@@ -21,7 +35,8 @@ class FriendsController < ApplicationController
 
   # POST /friends or /friends.json
   def create
-    @friend = Friend.new(friend_params)
+    #@friend = Friend.new(friend_params)
+    @friend = current_user.friends.build(friend_params)
 
     respond_to do |format|
       if @friend.save
@@ -65,6 +80,6 @@ class FriendsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def friend_params
-      params.require(:friend).permit(:firstName, :lastName, :email, :phone, :twitter)
+      params.require(:friend).permit(:firstName, :lastName, :email, :phone, :twitter, :user_id)
     end
 end
