@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   #CRUD
+  devise_for :users
   resources :friends
 
   get 'home/about'
